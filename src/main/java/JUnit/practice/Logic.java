@@ -1,0 +1,28 @@
+package JUnit.practice;
+
+import java.util.ArrayList;
+import java.util.LinkedList;
+
+public class Logic {
+
+    private final int listLength = 1000;
+
+    public int getListLength() {
+        return listLength;
+    }
+
+    public ArrayList fillArrayList(){
+        ArrayList<String> arrayList = new ArrayList<String>();
+        for(int i =1; i<=listLength;i++)
+            arrayList.add("Some String");
+        return arrayList;
+    }
+
+    public LinkedList fillLinkedList(){
+        LinkedList<String> linkedList = new LinkedList<String>();
+        for(int i =1; i<=listLength;i++)
+            linkedList.add("Some String");
+        return linkedList;
+    }
+}
+
