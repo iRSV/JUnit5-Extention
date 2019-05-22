@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="JUnit.practice.LogicTest" tests="2" skipped="0" failures="0" errors="0" timestamp="2019-05-21T15:44:31" hostname="inv5451-nb" time="0.049">
+<testsuite name="JUnit.practice.LogicTest" tests="2" skipped="0" failures="0" errors="0" timestamp="2019-05-22T13:26:45" hostname="inv5451-nb" time="0.037">
   <properties/>
-  <testcase name="fillLinkedList()" classname="JUnit.practice.LogicTest" time="0.043"/>
-  <testcase name="fillArrayList()" classname="JUnit.practice.LogicTest" time="0.003"/>
+  <testcase name="fillLinkedList()" classname="JUnit.practice.LogicTest" time="0.032"/>
+  <testcase name="fillArrayList()" classname="JUnit.practice.LogicTest" time="0.004"/>
   <system-out><![CDATA[]]></system-out>
-  <system-err><![CDATA[мая 21, 2019 6:44:31 PM JUnit.practice.TestExtention afterTestExecution
-INFO: Method [fillLinkedList] took 10 ms.
-мая 21, 2019 6:44:31 PM JUnit.practice.TestExtention afterTestExecution
-INFO: Method [fillArrayList] took 0 ms.
+  <system-err><![CDATA[мая 22, 2019 4:26:45 PM JUnit.practice.TestExtention afterTestExecution
+INFO: Method [fillLinkedList] took 7 ms.
+мая 22, 2019 4:26:45 PM JUnit.practice.TestExtention afterTestExecution
+INFO: Method [fillArrayList] took 1 ms.
 ]]></system-err>
 </testsuite>
