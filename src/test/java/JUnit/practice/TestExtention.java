@@ -31,6 +31,7 @@ public class TestExtention implements BeforeTestExecutionCallback, AfterTestExec
     }
 
     private Store getStore(ExtensionContext context) {
+        context.getRequiredTestMethod();
         return context.getStore(Namespace.create(getClass(), context.getRequiredTestMethod()));
     }
 }
