@@ -4,7 +4,14 @@ import org.junit.jupiter.api.extension.AfterTestExecutionCallback;
 import org.junit.jupiter.api.extension.BeforeTestExecutionCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
 
+import javax.tools.JavaCompiler;
+import javax.tools.ToolProvider;
 import java.io.*;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLClassLoader;
+import java.nio.file.*;
+import java.util.stream.Collectors;
 
 // перехватываем выполнение метода
 // Создаем дирректорию
@@ -19,38 +26,42 @@ public class JMHBenchmark implements BeforeTestExecutionCallback, AfterTestExecu
 
     private static final String JMHDIRECTORY = "C:\\Work\\JUnit5-Extention\\target";
     private static final String JMHDIRECTORYSTRUCTURE = "\\src\\jmh\\java\\JUnit\\practice\\benchmark";
-    private static final String FILENAME = "\\SampleBenchmark.java";
+    private static final String FILENAME = "\\Benchmark.java";
 
     // Создание среды для JMH, заменить путь на относительынй.
     @Override
     public void beforeTestExecution(ExtensionContext context) throws Exception {
-        deleteDirectory(new File(JMHDIRECTORY));
         new File(JMHDIRECTORY + JMHDIRECTORYSTRUCTURE).mkdirs();
-        createJMHExecutable(context.getRequiredTestMethod().toString());
+        Path sourceCode = createJMHExecutable(context.getRequiredTestMethod().getName());
+        Path compiledCode = compileJava(sourceCode);
+        runClass(compiledCode);
     }
+
     // Удаление среды для JMH.
     @Override
     public void afterTestExecution(ExtensionContext context) throws Exception {
-//        deleteDirectory(new File(JMHDIRECTORY));
+        deleteDirectory(new File(JMHDIRECTORY));
     }
 
     // Создание исполняемого JMH файла.
-     public void createJMHExecutable(String testMethod) throws IOException {
+     public Path createJMHExecutable(String testMethod) throws IOException {
          File file = new File(JMHDIRECTORY + JMHDIRECTORYSTRUCTURE + FILENAME);
-
          FileWriter fileWriter = new FileWriter(file, true);
-         fileWriter.write("@BenchmarkMode(Mode.AverageTime)\n" +
+         String methodCode = getSourceCode(testMethod);
+         fileWriter.write("package JUnit.practice;\n" +
+                 "\n" +
+                 "@BenchmarkMode(Mode.AverageTime)\n" +
                  "@OutputTimeUnit(TimeUnit.MILLISECONDS)\n" +
                  "@State(Scope.Benchmark)\n" +
                  "@Fork(value = 2, jvmArgs = {\"-Xms2G\", \"-Xmx2G\"})\n" +
                  "@Warmup(iterations = 3)\n" +
                  "@Measurement(iterations = 8)\n" +
-                 "public class BenchmarkLoop {\n" +
+                 "public class Benchmark {\n" +
                  "\n" +
                  "public void main(String[] args) throws RunnerException {\n" +
                  "\n" +
                  "   Options opt = new OptionsBuilder()\n" +
-                 "                   .include(BenchmarkLoop.class.getSimpleName())\n" +
+                 "                   .include(Benchmark.class.getSimpleName())\n" +
                  "                   .forks(1)\n" +
                  "                   .build();\n" +
                  "\n" +
@@ -58,35 +69,24 @@ public class JMHBenchmark implements BeforeTestExecutionCallback, AfterTestExecu
                  "}\n" +
                  "\n" +
                  "@Benchmark\n" +
-                 "\n" +
-                 testMethod +
+                 "public void " + methodCode + "\n" +
                  "}");
          fileWriter.close();
-
-//        @BenchmarkMode(Mode.AverageTime)
-//        @OutputTimeUnit(TimeUnit.MILLISECONDS)
-//        @State(Scope.Benchmark)
-//        @Fork(value = 2, jvmArgs = {"-Xms2G", "-Xmx2G"})
-//        @Warmup(iterations = 3)
-//        @Measurement(iterations = 8)
-//        public class BenchmarkLoop {
-//
-//            public void main(String[] args) throws RunnerException {
-//
-//                Options opt = new OptionsBuilder()
-//                        .include(BenchmarkLoop.class.getSimpleName())
-//                        .forks(1)
-//                        .build();
-//
-//                new Runner(opt).run();
-//            }
-//
-//            @Benchmark
-//            " +
-//            testMethod
-//
-//        }
+         return Paths.get(file.getAbsolutePath());
      }
+
+    private Path compileJava(Path javaFile) {
+        JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
+        compiler.run(null, null, null, javaFile.toFile().getAbsolutePath());
+        return javaFile.getParent().resolve("Benchmark.class");
+    }
+
+    private void runClass(Path javaClass) throws MalformedURLException, ClassNotFoundException, IllegalAccessException, InstantiationException {
+        URL classUrl = javaClass.getParent().toFile().toURI().toURL();
+        URLClassLoader classLoader = URLClassLoader.newInstance(new URL[]{classUrl});
+        Class<?> clazz = Class.forName("Benchmark", true, classLoader);
+        clazz.newInstance();
+    }
 
     private void deleteDirectory(final File file){
         if (file.isDirectory()) {
@@ -103,4 +103,26 @@ public class JMHBenchmark implements BeforeTestExecutionCallback, AfterTestExecu
             file.delete();
         }
     }
+
+    public String getSourceCode(String methodName) throws IOException {
+        InputStream stream = new FileInputStream("C:\\Work\\JUnit5-Extention\\src\\test\\java\\JUnit\\practice\\LogicTest.java");
+        String separator = System.getProperty("line.separator");
+        BufferedReader reader = new BufferedReader(new InputStreamReader(stream));
+        String sourceCode = reader.lines().collect(Collectors.joining(separator));
+
+        String methodCode = sourceCode.substring(sourceCode.indexOf(methodName, sourceCode.length() - sourceCode.indexOf(methodName)));
+
+        for (int i = 0; i < methodCode.length(); i++) {
+            String code = methodCode.substring(0, i);
+            long open = code.chars().filter(ch -> ch == '{').count() - 1;
+            long close = code.chars().filter(ch -> ch == '}').count() - 1;
+
+            if (open == close && open != 0) {
+                methodCode = code;
+                break;
+            }
+        }
+        return methodCode;
+    }
 }
+
