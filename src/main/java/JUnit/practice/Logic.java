@@ -13,8 +13,6 @@ public class Logic {
     }
 
     public ArrayList fillArrayList(){
-        File file = new File("/target/src/jmh/java/JUnit/practice/benchmark");
-        file.mkdirs();
         ArrayList<String> arrayList = new ArrayList<String>();
         for(int i =1; i<=listLength;i++)
             arrayList.add("Some String");

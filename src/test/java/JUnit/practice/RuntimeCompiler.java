@@ -65,7 +65,7 @@ public class RuntimeCompiler implements TestInstancePostProcessor, BeforeTestExe
         clazz.newInstance();
     }
 
-    public void doEvil(String sourcePath) throws Exception {
+    public void runJMH(String sourcePath) throws Exception {
         String source = readCode(sourcePath);
         Path javaFile = saveSource(source);
         Path classFile = compileSource(javaFile);
@@ -73,6 +73,6 @@ public class RuntimeCompiler implements TestInstancePostProcessor, BeforeTestExe
     }
 
     public static void main(String... args) throws Exception {
-        new RuntimeCompiler().doEvil(args[0]);
+        new RuntimeCompiler().runJMH(args[0]);
     }
 }
