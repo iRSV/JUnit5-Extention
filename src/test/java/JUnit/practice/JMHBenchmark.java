@@ -40,7 +40,7 @@ public class JMHBenchmark implements BeforeTestExecutionCallback, AfterTestExecu
     // Удаление среды для JMH.
     @Override
     public void afterTestExecution(ExtensionContext context) throws Exception {
-        deleteDirectory(new File(JMHDIRECTORY));
+//        deleteDirectory(new File(JMHDIRECTORY));
     }
 
     // Создание исполняемого JMH файла.
