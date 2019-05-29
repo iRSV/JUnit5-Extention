@@ -13,20 +13,18 @@ import java.net.URLClassLoader;
 import java.nio.file.*;
 import java.util.stream.Collectors;
 
-// перехватываем выполнение метода
-// Создаем дирректорию
-// помещаем в нее исполняемый код по шаблону
-// обертка jmh внутрь код метода теста
-// запускаем код
-// сохраняем результат
-// удаляем дирректорию
-
 public class JMHBenchmark implements BeforeTestExecutionCallback, AfterTestExecutionCallback {
 
-
+    // Директория для работы JMH
     private static final String JMHDIRECTORY = "C:\\Work\\JUnit5-Extention\\target";
     private static final String JMHDIRECTORYSTRUCTURE = "\\src\\jmh\\java\\JUnit\\practice\\benchmark";
     private static final String FILENAME = "\\Benchmark.java";
+
+    // Опции для настройки JMH
+    private static final String BENCHMARKMODE =  "AverageTime"; // Тип измерений.
+    private static final String OUTPUTTIMEUNIT =  "MILLISECONDS"; // Единицы вывода.
+    private static final String WARMUP =  "3"; // Количество итераций на разогреве.
+    private static final String MEASUREMENT =  "5"; // Количество итераций на замерах.
 
     // Создание среды для JMH, заменить путь на относительынй.
     @Override
@@ -40,7 +38,7 @@ public class JMHBenchmark implements BeforeTestExecutionCallback, AfterTestExecu
     // Удаление среды для JMH.
     @Override
     public void afterTestExecution(ExtensionContext context) throws Exception {
-//        deleteDirectory(new File(JMHDIRECTORY));
+        deleteDirectory(new File(JMHDIRECTORY));
     }
 
     // Создание исполняемого JMH файла.
@@ -50,12 +48,12 @@ public class JMHBenchmark implements BeforeTestExecutionCallback, AfterTestExecu
          String methodCode = getSourceCode(testMethod);
          fileWriter.write("package JUnit.practice;\n" +
                  "\n" +
-                 "@BenchmarkMode(Mode.AverageTime)\n" +
-                 "@OutputTimeUnit(TimeUnit.MILLISECONDS)\n" +
+                 "@BenchmarkMode(Mode." + BENCHMARKMODE + ")\n" +
+                 "@OutputTimeUnit(TimeUnit."+OUTPUTTIMEUNIT+")\n" +
                  "@State(Scope.Benchmark)\n" +
                  "@Fork(value = 2, jvmArgs = {\"-Xms2G\", \"-Xmx2G\"})\n" +
-                 "@Warmup(iterations = 3)\n" +
-                 "@Measurement(iterations = 8)\n" +
+                 "@Warmup(iterations = "+WARMUP+")\n" +
+                 "@Measurement(iterations = "+MEASUREMENT+")\n" +
                  "public class Benchmark {\n" +
                  "\n" +
                  "public void main(String[] args) throws RunnerException {\n" +
@@ -75,12 +73,14 @@ public class JMHBenchmark implements BeforeTestExecutionCallback, AfterTestExecu
          return Paths.get(file.getAbsolutePath());
      }
 
+    // Компиляция исполняемого JMH файла.
     private Path compileJava(Path javaFile) {
         JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
         compiler.run(null, null, null, javaFile.toFile().getAbsolutePath());
         return javaFile.getParent().resolve("Benchmark.class");
     }
 
+    // Запуск исполняемого JMH файла.
     private void runClass(Path javaClass) throws MalformedURLException, ClassNotFoundException, IllegalAccessException, InstantiationException {
         URL classUrl = javaClass.getParent().toFile().toURI().toURL();
         URLClassLoader classLoader = URLClassLoader.newInstance(new URL[]{classUrl});
@@ -88,6 +88,7 @@ public class JMHBenchmark implements BeforeTestExecutionCallback, AfterTestExecu
         clazz.newInstance();
     }
 
+    // Удаление директории.
     private void deleteDirectory(final File file){
         if (file.isDirectory()) {
             String[] files = file.list();
